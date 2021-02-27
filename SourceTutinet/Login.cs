@@ -23,9 +23,10 @@ namespace SourceTutinet
         private void btnLogin_Click(object sender, EventArgs e)
         {
             string usuario, contrasena;
-            Empleado emp = new Empleado();
+            Empleado emp;
             usuario = txtUser.Text;
-            contrasena = txtPassword.Text;
+            contrasena = Encrypt.GetSHA256(txtPassword.Text);
+
             emp = empN.getValidacion(usuario,contrasena);
 
             if (emp != null) {

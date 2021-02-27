@@ -42,7 +42,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EmpleadoNegocios.cs" />
+    <Compile Include="Encrypt.cs" />
+    <Compile Include="GenPassword.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TDocumentoNegocios.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\T.Datos\T.Datos.csproj">

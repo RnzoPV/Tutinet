@@ -44,6 +44,7 @@
     <Compile Include="Conexion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EmpleadoDatos.cs" />
+    <Compile Include="TDocumentoDatos.cs" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
