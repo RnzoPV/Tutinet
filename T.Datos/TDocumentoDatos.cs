@@ -35,8 +35,8 @@ namespace T.Datos
             }
             finally
             {
+                if(cn!=null)
                 cn.Close();
-
             }
             return table;
         }

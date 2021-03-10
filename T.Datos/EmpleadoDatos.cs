@@ -8,26 +8,28 @@ using System.Data.SqlClient;
 using System.Data;
 using T.Modelo;
 
+
 namespace T.Datos
 {
-    public class EmpleadoDatos : Conexion
+    public class EmpleadoDatos :Conexion
     {
-        public EmpleadoDatos() : base() {
-        
+        public EmpleadoDatos() :base()
+        {
         }
-
-        public Empleado getValidacion(string usuario,string contrasena)
+        public Empleado getValidacion(string usuario, string contrasena)
         {
             cn.Open();
-            Empleado emp = null ;
+            Empleado emp = null;
             string query = "USP_Validacion_Login";
             SqlCommand cm = new SqlCommand(query, cn);
             cm.CommandType = CommandType.StoredProcedure;
-            cm.Parameters.AddWithValue("@emp_usuario",usuario);
-            cm.Parameters.AddWithValue("@emp_contrasena",contrasena);
+            cm.Parameters.AddWithValue("@emp_usuario", usuario);
+            cm.Parameters.AddWithValue("@emp_contrasena", contrasena);
             SqlDataReader dr = cm.ExecuteReader();
-            try {
-                while (dr.Read()) {
+            try
+            {
+                while (dr.Read())
+                {
                     emp = new Empleado();
                     emp.empleado_id = dr.GetInt32(0);
                     emp.empleado_nombre = dr.GetString(1);
@@ -37,55 +39,133 @@ namespace T.Datos
             }
             catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine("Error Empleado Datos"+e.Message);
+                throw e;
             }
             finally
             {
-                dr.Close();
-                cn.Close();
+                if (dr != null)
+                    dr.Close();
+                if (cn != null)
+                    cn.Close();
             }
             return emp;
         }
         public DataTable getAllEmplados()
         {
-            cn.Open();
-            string query = "USP_Get_Empleados";
-            SqlDataAdapter adapter = new SqlDataAdapter(query, cn);
-            adapter.SelectCommand.CommandType = CommandType.StoredProcedure;
-            DataTable table = new DataTable();
-            adapter.Fill(table);
-            cn.Close();
+            SqlParameter[] Params = new SqlParameter[] { };
+            return FDBHelper.getQuery("USP_LISTAR_CLIENTE", Params);
+        }
+        public DataTable filtrarEmpleado(string query)
+        {
+            DataTable table = null;
+            try
+            {
+
+                string querybase = "SELECT * FROM V_Empleados " + query;
+                table = FDBHelper.getQuery(querybase);
+
+            }
+            catch (Exception e)
+            {
+                throw e;
+            }
             return table;
         }
 
-        public void insertarEmpleado(Empleado emp)
+        public int insertarEmpleado(Empleado emp)
         {
+            int rs = 0;
             try
             {
-                cn.Open();
-                string query = "USP_Insertar_Empleado";
-                SqlCommand cmd = new SqlCommand(query, cn);
-                cmd.CommandType = CommandType.StoredProcedure;
-
-                cmd.Parameters.AddWithValue("@empleado_nombre", emp.empleado_nombre);
-                cmd.Parameters.AddWithValue("@empleado_apellido", emp.empleado_apellido);
-                cmd.Parameters.AddWithValue("@empleado_fecnac", emp.empleado_fec_nac);
-                cmd.Parameters.AddWithValue("@empleado_tipodoc_id", emp.empleado_tipodoc_id);
-                cmd.Parameters.AddWithValue("@empleado_doc", emp.empleado_doc);
-                cmd.Parameters.AddWithValue("@empleado_celular", emp.empleado_celular);
-                cmd.Parameters.AddWithValue("@empleado_usuario", emp.empleado_usuario);
-                cmd.Parameters.AddWithValue("@empleado_contrasena", emp.empleado_contrasena);
-                cmd.Parameters.AddWithValue("@empleado_estado", emp.empleado_estado);
-                cmd.ExecuteNonQuery();
+                SqlParameter[] Params = new SqlParameter[]
+                {
+                    FDBHelper.ConvertSQLParameter("@empleado_nombre",SqlDbType.VarChar,0,emp.empleado_nombre),
+                    FDBHelper.ConvertSQLParameter("@empleado_apellido",SqlDbType.VarChar,0,emp.empleado_apellido),
+                    FDBHelper.ConvertSQLParameter("@empleado_fecnac",SqlDbType.DateTime,0,emp.empleado_fec_nac),
+                    FDBHelper.ConvertSQLParameter("@empleado_tipodoc_id",SqlDbType.Int,0,emp.empleado_tipodoc_id),
+                    FDBHelper.ConvertSQLParameter("@empleado_doc",SqlDbType.VarChar,0,emp.empleado_doc),
+                    FDBHelper.ConvertSQLParameter("@empleado_celular",SqlDbType.VarChar,0,emp.empleado_celular),
+                    FDBHelper.ConvertSQLParameter("@empleado_usuario",SqlDbType.VarChar,0,emp.empleado_usuario),
+                    FDBHelper.ConvertSQLParameter("@empleado_contrasena",SqlDbType.VarChar,0,emp.empleado_contrasena),
+                    FDBHelper.ConvertSQLParameter("@empleado_estado",SqlDbType.Int,0,emp.empleado_estado)
+                };
+                rs = FDBHelper.ExcuteNonQuery("USP_Insertar_Empleado", Params);
             }
             catch (SqlException e)
             {
-                throw new Exception(e.Message);
+                Console.WriteLine("Error en la insercion del Empleado" + e);
             }
-            finally
-            {
-                cn.Close();
-            }
+            return rs;
         }
+
+        public int actualizarEmpleado(Empleado emp)
+        {
+            int rs = 0;
+
+            try
+            {
+                SqlParameter[] Params = new SqlParameter[]{
+                    FDBHelper.ConvertSQLParameter("@empleado_id",SqlDbType.Int,0,emp.empleado_id),
+                    FDBHelper.ConvertSQLParameter("@empleado_nombre",SqlDbType.VarChar,0,emp.empleado_nombre),
+                    FDBHelper.ConvertSQLParameter("@empleado_apellido",SqlDbType.VarChar,0,emp.empleado_apellido),
+                    FDBHelper.ConvertSQLParameter("@empleado_fecnac",SqlDbType.DateTime,0,emp.empleado_fec_nac),
+                    FDBHelper.ConvertSQLParameter("@empleado_tipodoc_id",SqlDbType.Int,0,emp.empleado_tipodoc_id),
+                    FDBHelper.ConvertSQLParameter("@empleado_doc",SqlDbType.VarChar,0,emp.empleado_doc),
+                    FDBHelper.ConvertSQLParameter("@empleado_celular",SqlDbType.VarChar,0,emp.empleado_celular),
+                    FDBHelper.ConvertSQLParameter("@empleado_usuario",SqlDbType.VarChar,0,emp.empleado_usuario),
+                    FDBHelper.ConvertSQLParameter("@empleado_estado",SqlDbType.Int,0,emp.empleado_estado)
+                };
+                rs = FDBHelper.ExcuteNonQuery("SP_ACTUALIZAR_EMPLEADO_CONTRASENA", Params);
+            }
+            catch (SqlException e)
+            {
+                throw e;
+            }
+            return rs;
+        }
+
+        public int actualizarEmpleadoContrasena(Empleado emp)
+        {
+            int rs = 0;
+            try
+            {
+                SqlParameter[] Params = new SqlParameter[]{
+                    FDBHelper.ConvertSQLParameter("@empleado_id",SqlDbType.Int,0,emp.empleado_id),
+                    FDBHelper.ConvertSQLParameter("@empleado_nombre",SqlDbType.VarChar,0,emp.empleado_nombre),
+                    FDBHelper.ConvertSQLParameter("@empleado_apellido",SqlDbType.VarChar,0,emp.empleado_apellido),
+                    FDBHelper.ConvertSQLParameter("@empleado_fecnac",SqlDbType.DateTime,0,emp.empleado_fec_nac),
+                    FDBHelper.ConvertSQLParameter("@empleado_tipodoc_id",SqlDbType.Int,0,emp.empleado_tipodoc_id),
+                    FDBHelper.ConvertSQLParameter("@empleado_doc",SqlDbType.VarChar,0,emp.empleado_doc),
+                    FDBHelper.ConvertSQLParameter("@empleado_celular",SqlDbType.VarChar,0,emp.empleado_celular),
+                    FDBHelper.ConvertSQLParameter("@empleado_usuario",SqlDbType.VarChar,0,emp.empleado_usuario),
+                    FDBHelper.ConvertSQLParameter("@empleado_contrasena",SqlDbType.VarChar,0,emp.empleado_contrasena),
+                    FDBHelper.ConvertSQLParameter("@empleado_estado",SqlDbType.Int,0,emp.empleado_estado)
+                };
+                rs = FDBHelper.ExcuteNonQuery("SP_ACTUALIZAR_EMPLEADO_CONTRASENA", Params);
+            }
+            catch (SqlException e)
+            {
+                throw e;
+            }
+            return rs;
+        }
+
+        public int eliminarEmpleado(int id)
+        {
+            int rs = 0;
+            try
+            {
+                SqlParameter[] Params = new SqlParameter[]{
+                    FDBHelper.ConvertSQLParameter("@empleado_id",SqlDbType.Int,0,id),
+                };
+                rs = FDBHelper.ExcuteNonQuery("USP_ELIMINAR_EMPLEADO", Params);
+            }
+            catch (SqlException e)
+            {
+                throw e;
+            }
+            return rs;
+        }
+
     }
 }

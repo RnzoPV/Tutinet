@@ -303,31 +303,33 @@ GO
 select * from sys.procedures
 GO
 
-CREATE PROCEDURE USP_Get_Empleados
+CREATE VIEW V_Empleados
 AS
-BEGIN
 	SELECT e.empleado_id AS 'ID',E.empleado_nombre AS 'Nombres',E.empleado_apellido AS 'Apellidos',
 	E.empleado_fecnac AS 'FEC. NAC.',T.tipodoc_abreviatura AS 'Documento',E.empleado_doc AS 'NRO. DOC.',
 	E.empleado_celular AS 'Celular',E.empleado_usuario AS 'Usuario',E.empleado_estado AS 'Estado'
 	FROM Empleado AS E
 	INNER JOIN TipoDoc AS T
 	ON E.empleado_tipodoc_id = T.tipodoc_id
-END
 GO
 
+CREATE PROCEDURE USP_LISTAR_CLIENTE
+AS
+	SELECT TOP 100 * FROM V_Empleados
+	ORDER BY Estado DESC 
+GO
 EXEC USP_Get_Empleados
 GO 
 select * from Empleado
 go
 
 
-CREATE PROCEDURE USP_Insertar_Empleado
+Create PROCEDURE USP_Insertar_Empleado
 @empleado_nombre VARCHAR(20), 
 @empleado_apellido VARCHAR(40), 
 @empleado_fecnac DATE, 
 @empleado_tipodoc_id INT,
 @empleado_doc VARCHAR(15),
-@empleado_feccre DATE,
 @empleado_celular VARCHAR(9), 
 @empleado_usuario VARCHAR(40), 
 @empleado_contrasena CHAR(64),
@@ -355,10 +357,72 @@ BEGIN
 						@empleado_celular, 
 						@empleado_usuario, 
 						@empleado_contrasena,
-						DEFAULT)
+						@empleado_estado)
 
 		SELECT @@IDENTITY
 END
 GO
 
+CREATE PROCEDURE SP_ACTUALIZAR_EMPLEADO
+@empleado_id INT,
+@empleado_nombre VARCHAR(20), 
+@empleado_apellido VARCHAR(40), 
+@empleado_fecnac DATE, 
+@empleado_tipodoc_id INT,
+@empleado_doc VARCHAR(15),
+@empleado_celular VARCHAR(9), 
+@empleado_usuario VARCHAR(40), 
+@empleado_estado INT
+AS
 
+	UPDATE Empleado
+		SET empleado_nombre = @empleado_nombre,
+			empleado_apellido = @empleado_apellido,
+			empleado_fecnac = @empleado_fecnac,
+			empleado_tipodoc_id = @empleado_tipodoc_id,
+			empleado_doc = @empleado_doc,
+			empleado_celular = @empleado_celular,
+			empleado_usuario = @empleado_usuario,
+			empleado_estado = @empleado_estado
+		WHERE empleado_id = @empleado_id
+
+GO
+
+CREATE PROCEDURE SP_ACTUALIZAR_EMPLEADO_CONTRASENA
+@empleado_id INT,
+@empleado_nombre VARCHAR(20), 
+@empleado_apellido VARCHAR(40), 
+@empleado_fecnac DATE, 
+@empleado_tipodoc_id INT,
+@empleado_doc VARCHAR(15),
+@empleado_celular VARCHAR(9), 
+@empleado_usuario VARCHAR(40), 
+@empleado_estado INT,
+@empleado_contrasena CHAR(64)
+AS
+
+	UPDATE Empleado
+		SET empleado_nombre = @empleado_nombre,
+			empleado_apellido = @empleado_apellido,
+			empleado_fecnac = @empleado_fecnac,
+			empleado_tipodoc_id = @empleado_tipodoc_id,
+			empleado_doc = @empleado_doc,
+			empleado_celular = @empleado_celular,
+			empleado_usuario = @empleado_usuario,
+			empleado_estado = @empleado_estado,
+			empleado_contrasena = @empleado_contrasena
+		WHERE empleado_id = @empleado_id
+GO
+
+select * from sys.procedures
+go
+
+CREATE PROCEDURE USP_ELIMINAR_EMPLEADO
+@empleado_id int
+AS
+	UPDATE Empleado SET empleado_estado = 0 WHERE empleado_id = @empleado_id
+GO
+SELECT * FROM Empleado
+GO
+
+EXEC USP_ELIMINAR_EMPLEADO '101'
